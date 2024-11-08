@@ -1,7 +1,7 @@
 local screenWidth, screenHeight = 800, 600 -- Canvas dimensions
 local borderThickness = 2 -- Thickness of the green border
 
--- Muscle car style player 1 properties
+-- player 1 properties
 local player_1 = {
     x = 600,
     y = 300,
@@ -21,7 +21,7 @@ local player_1 = {
     score = 0, -- Player score
 }
 
--- European sports car style player 2 properties
+-- player 2 properties
 local player_2 = {
     x = 200,
     y = 300,
