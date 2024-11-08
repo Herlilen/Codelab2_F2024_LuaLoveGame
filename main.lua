@@ -15,7 +15,10 @@ local player_1 = {
     velocity = 0, -- Initial velocity
     color = {0, 255, 0}, -- Player color (green)
     originalColor = {0, 255, 0}, -- Original color for resetting after collision
-    hitTimer = 0 -- Timer for collision color effect
+    hitTimer = 0, -- Timer for collision color effect
+    health = 100, -- Player health
+    baseDamage = 10, -- Base damage for collision
+    score = 0, -- Player score
 }
 
 -- European sports car style player 2 properties
@@ -32,8 +35,12 @@ local player_2 = {
     velocity = 0,
     color = {255, 255, 255}, -- White color
     originalColor = {255, 255, 255},
-    hitTimer = 0
+    hitTimer = 0,
+    health = 100,
+    baseDamage = 10,
+    score = 0,
 }
+
 
 local collisionDuration = 1 -- Duration for player to stay red after collision
 local repulsionForce = 2000 -- Force applied to separate players on collision
@@ -62,6 +69,12 @@ function love.update(dt)
     -- Check for collisions between players in both directions
     checkCollision(player_1, player_2, dt)
     checkCollision(player_2, player_1, dt)
+
+    -- drawPlayer score
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.print("Player 1: " .. player_1.score, 10, 10)
+    love.graphics.print("Player 2: " .. player_2.score, 10, 30)
+
 end
 
 -- Detects if "R" is pressed and resets players if so
@@ -71,18 +84,22 @@ function love.keypressed(key)
     end
 end
 
+
 -- Resets players to initial positions, colors, and velocity
 function resetPlayers()
     player_1.x, player_1.y = 600, 300
     player_1.velocity = 0
     player_1.color = player_1.originalColor
     player_1.hitTimer = 0
+    player_1.health = 100
 
     player_2.x, player_2.y = 200, 300
     player_2.velocity = 0
     player_2.color = player_2.originalColor
     player_2.hitTimer = 0
+    player_2.health = 100
 end
+
 
 -- Updates player position, rotation, speed, and boundary restrictions
 function updatePlayer(player, upKey, downKey, leftKey, rightKey, dt)
@@ -136,6 +153,8 @@ function updatePlayer(player, upKey, downKey, leftKey, rightKey, dt)
             player.color = player.originalColor
         end
     end
+
+    
 end
 
 -- Draws player with circle and triangle direction indicator
@@ -152,6 +171,10 @@ function drawPlayer(player)
     local baseRightY = player.y + math.sin(player.rotation - math.rad(120)) * player.radius
 
     love.graphics.polygon("line", topX, topY, baseLeftX, baseLeftY, baseRightX, baseRightY)
+    --drawHealth
+    love.graphics.setColor(2550, 255, 255)
+    love.graphics.print(math.ceil(player.health), player.x - 10, player.y - 10)
+    
 end
 
 -- Checks if playerA's triangle tip collides with playerB's circle, triggers color change and repulsion if so
@@ -177,6 +200,17 @@ function checkCollision(playerA, playerB, dt)
         playerA.y = playerA.y - separationY
         playerB.x = playerB.x + separationX
         playerB.y = playerB.y + separationY
+
+        local damage = math.abs(playerA.baseDamage * (dxTop / distanceToTop))
+
+    
+        playerB.health = playerB.health - damage
+
+        if playerB.health < 0 then
+            playerA.score = playerA.score + 1
+            resetPlayers()
+        end
+
     else
         -- Check for circle overlap to prevent overlapping (no color change or repulsion)
         local dxCircle = playerB.x - playerA.x
